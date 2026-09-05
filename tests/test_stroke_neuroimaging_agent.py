@@ -3,12 +3,13 @@ Automated Pytest Test Suite for Stroke Neuroimaging Agent.
 Domain: Radiology & Neuroimaging Systems
 Standard: ACR RADS / Fleischner Society / ASPECTS Guidelines
 """
+import math
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pytest
-from agents.base import PHIGuard, AuditLogger, SecurityException
+from agents.base import PHIGuard, AuditLogger, SecurityException, AuditTrail
 from agents.models import SystemTaskPayload, UrgencyLevel, SystemIntegrityStatus
 from agents.workers import InvariantQCWorker, SafetyEscalationWorker, ProtocolConformanceWorker
 from agents.supervisor import SystemSupervisor
@@ -63,3 +64,79 @@ def test_supervisor_consensus_and_audit():
     assert main(["audit", "--task-id", "CLI-TEST-01"]) == 0
     assert main(["chat", "Explain", "specifications"]) == 0
     assert main(["verify-audit"]) == 0
+
+
+# ==============================================================================
+# Input Validation Tests
+# ==============================================================================
+
+def test_payload_rejects_nan_primary():
+    """NaN metric values must be rejected."""
+    with pytest.raises(Exception):  # ValidationError
+        SystemTaskPayload(task_id="T-NAN", target_identifier="KEY-01", primary_metric=math.nan)
+
+
+def test_payload_rejects_nan_secondary():
+    """NaN secondary metric values must be rejected."""
+    with pytest.raises(Exception):
+        SystemTaskPayload(task_id="T-NAN2", target_identifier="KEY-01", primary_metric=10.0, secondary_metric=math.nan)
+
+
+def test_payload_rejects_inf_primary():
+    """Infinite metric values must be rejected."""
+    with pytest.raises(Exception):
+        SystemTaskPayload(task_id="T-INF", target_identifier="KEY-01", primary_metric=math.inf)
+
+
+def test_payload_rejects_negative_primary():
+    """Negative metric values must be rejected."""
+    with pytest.raises(Exception):
+        SystemTaskPayload(task_id="T-NEG", target_identifier="KEY-01", primary_metric=-5.0)
+
+
+def test_payload_rejects_empty_task_id():
+    """Empty task_id must be rejected."""
+    with pytest.raises(Exception):
+        SystemTaskPayload(task_id="   ", target_identifier="KEY-01", primary_metric=10.0)
+
+
+def test_payload_rejects_empty_target():
+    """Empty target_identifier must be rejected."""
+    with pytest.raises(Exception):
+        SystemTaskPayload(task_id="T1", target_identifier="", primary_metric=10.0)
+
+
+def test_payload_accepts_valid_zero_metrics():
+    """Zero metric values are valid (boundary case)."""
+    p = SystemTaskPayload(task_id="T-ZERO", target_identifier="KEY-01", primary_metric=0.0, secondary_metric=0.0)
+    assert p.primary_metric == 0.0
+    assert p.secondary_metric == 0.0
+
+
+# ==============================================================================
+# Audit Security Tests
+# ==============================================================================
+
+def test_audit_trail_requires_secret_key():
+    """AuditTrail must require a secret key."""
+    import os
+    original = os.environ.get("AUDIT_SECRET_KEY")
+    try:
+        del os.environ["AUDIT_SECRET_KEY"]
+        with pytest.raises(SecurityException):
+            AuditTrail(secret_key="")
+    finally:
+        if original is not None:
+            os.environ["AUDIT_SECRET_KEY"] = original
+
+
+def test_audit_trail_rejects_short_key():
+    """AuditTrail must reject keys shorter than 32 characters."""
+    with pytest.raises(SecurityException):
+        AuditTrail(secret_key="short-key")
+
+
+def test_audit_trail_accepts_valid_key():
+    """AuditTrail accepts a key of sufficient length."""
+    trail = AuditTrail(secret_key="this-is-a-valid-32-char-secret-key!!")
+    assert trail.secret_key == b"this-is-a-valid-32-char-secret-key!!"

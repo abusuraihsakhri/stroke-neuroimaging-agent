@@ -57,7 +57,17 @@ class PHIGuard:
 class AuditTrail:
     """Cryptographic Tamper-Evident HMAC-SHA256 Audit Trail."""
     def __init__(self, secret_key: Optional[str] = None):
-        self.secret_key = (secret_key or os.getenv("AUDIT_SECRET_KEY", "stroke-neuroimaging-agent-master-audit-key-2026")).encode("utf-8")
+        resolved_key = secret_key or os.getenv("AUDIT_SECRET_KEY")
+        if not resolved_key:
+            raise SecurityException(
+                "AUDIT_SECRET_KEY environment variable is required. "
+                "Set it before instantiating AuditTrail."
+            )
+        if len(resolved_key) < 32:
+            raise SecurityException(
+                "AUDIT_SECRET_KEY must be at least 32 characters for HMAC-SHA256 security."
+            )
+        self.secret_key = resolved_key.encode("utf-8")
         self.logs: List[Dict[str, Any]] = []
 
     def log(self, actor: str, actor_tier: str, event_type: str, details: Dict[str, Any]) -> Dict[str, Any]:
@@ -93,21 +103,28 @@ class AuditTrail:
         return self.logs
 
 
-GLOBAL_AUDIT = AuditTrail()
+_AUDIT_INSTANCE: Optional[AuditTrail] = None
+
+
+def _get_audit_instance() -> AuditTrail:
+    global _AUDIT_INSTANCE
+    if _AUDIT_INSTANCE is None:
+        _AUDIT_INSTANCE = AuditTrail()
+    return _AUDIT_INSTANCE
 
 
 class AuditLogger:
     @staticmethod
     def log(actor: str, actor_tier: str, event_type: str, details: Dict[str, Any]) -> Dict[str, Any]:
-        return GLOBAL_AUDIT.log(actor, actor_tier, event_type, details)
+        return _get_audit_instance().log(actor, actor_tier, event_type, details)
 
     @staticmethod
     def get_trail() -> List[Dict[str, Any]]:
-        return GLOBAL_AUDIT.get_trail()
+        return _get_audit_instance().get_trail()
 
     @staticmethod
     def verify_integrity() -> bool:
-        return GLOBAL_AUDIT.verify_integrity()
+        return _get_audit_instance().verify_integrity()
 
 
 class ActionExecutor:
