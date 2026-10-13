@@ -1,7 +1,7 @@
 """
 Clinical Algorithmic Engine & Guideline Rules for NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent.
 Domain: Neuroradiology
-Standard: AHA / ASA 2019 Acute Ischemic Stroke Guidelines
+Scope: synthetic thresholds, not validated ASPECTS or LVO criteria
 """
 import math
 from typing import Dict, Any, List, Optional
@@ -9,7 +9,7 @@ from .models import ClinicalCasePayload, AgentAlert, UrgencyLevel, ClinicalInteg
 
 
 class ClinicalDomainEngine:
-    GUIDELINE = "AHA / ASA 2019 Acute Ischemic Stroke Guidelines"
+    GUIDELINE = "Synthetic rules only (not clinical guidance)"
     PRIMARY_BASELINE_LIMIT = 20.0
     SECONDARY_ALERT_LIMIT = 10.0
 
@@ -18,8 +18,8 @@ class ClinicalDomainEngine:
         if value > cls.PRIMARY_BASELINE_LIMIT:
             return {
                 "title": "Primary Metric Threshold Exceeded",
-                "finding": f"Observed value ({value:.2f}) exceeds AHA / ASA 2019 Acute Ischemic Stroke Guidelines clinical baseline limit ({cls.PRIMARY_BASELINE_LIMIT:.1f}).",
-                "recommendation": "Perform immediate secondary verification and calibration review.",
+                "finding": f"Observed value ({value:.2f}) exceeds illustrative primary demonstration threshold ({cls.PRIMARY_BASELINE_LIMIT:.1f}).",
+                "recommendation": "Review the simulated inputs; no medical conclusion can be drawn.",
             }
         return None
 
@@ -29,7 +29,7 @@ class ClinicalDomainEngine:
             return {
                 "title": "STAT Kinetic Escalation Triggered",
                 "finding": f"Kinetic parameter ({value:.2f}) with STAT={is_stat} requires prioritized supervision.",
-                "recommendation": "Activate closed-loop verbal clinician notification protocol per Joint Commission standards.",
+                "recommendation": "Synthetic escalation flag only; not a clinical notification protocol.",
             }
         return None
 
@@ -40,6 +40,6 @@ class ClinicalDomainEngine:
             return {
                 "title": "Phenotypic / Biomarker Discordance Identified",
                 "finding": f"Status flag '{status_flag}' indicates divergence from standard diagnostic concordance.",
-                "recommendation": f"Order reflex confirmatory testing per AHA / ASA 2019 Acute Ischemic Stroke Guidelines clinical recommendations.",
+                "recommendation": f"Inspect simulated status metadata; not a medical recommendation.",
             }
         return None
