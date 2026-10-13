@@ -49,7 +49,7 @@ class Severity(str, Enum):
 
 class DomainKnowledgeRegistry:
     """Enterprise domain rules, guideline matrices, and evidence benchmarks."""
-    SYSTEM_VERSION = "2.0.0-PRO-CLINICAL"
+    SYSTEM_VERSION = "2.0.1-PRO-SYNTHETIC"
     ZERO_PHI_COMPLIANCE = False
     HIPAA_SAFE_HARBOR = "NOT_ASSESSED"
 
@@ -116,7 +116,7 @@ class LVOOcclusionFinderAgent:
                     severity=Severity.CRITICAL,
                     title="Urgent Consensus Protocol Trigger",
                     details=f"Secondary parameter index ({val2:.1f}) triggered automated supervisory escalation.",
-                    recommendation="Initiate mandatory closed-loop clinical notification protocol.",
+                    recommendation="Review the simulated priority flag; not a clinical notification protocol.",
                 )
             )
         return alerts
@@ -267,7 +267,7 @@ def main(argv=None):
         }
         dossier = coordinator.audit_case(payload)
         print("=" * 80)
-        print(f"  NEUROSTROKE SENTINEL: ASPECTS SCORE & LARGE VESSEL OCCLUSION (LVO) TRIAGE AGENT")
+        print(f"  NEUROSTROKE SENTINEL: SYNTHETIC RULE DEMONSTRATION")
         print(f"  Case: {dossier['case_id']} | Status: [{dossier['overall_status']}] | Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
