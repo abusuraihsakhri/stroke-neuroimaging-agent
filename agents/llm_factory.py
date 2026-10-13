@@ -11,7 +11,7 @@ class MockLLM:
 
     def invoke(self, prompt: str) -> str:
         PHIGuard.assert_no_phi(prompt)
-        return f"[{self.system_name} Deterministic Verification Engine]: Clinical & scientific analysis verified for query: '{prompt[:60]}...'. Parameters evaluated under ACR RADS / Fleischner Society / ASPECTS Guidelines."
+        return f"[{self.system_name} mock response]: No external model was called. Query preview: '{prompt[:60]}...'."
 
 
 class LLMFactory:
@@ -22,10 +22,6 @@ class LLMFactory:
         prov = str(provider).lower()
         if prov in ["mock", "deterministic", "test"]:
             return MockLLM(system_name)
-        elif prov in ["ollama", "local"]:
-            return MockLLM(system_name)
-        elif prov in ["claude", "anthropic"]:
-            return MockLLM(system_name)
-        elif prov in ["openai", "gpt4"]:
-            return MockLLM(system_name)
-        return MockLLM(system_name)
+        raise ValueError(
+            f"Unsupported model provider {provider!r}; only the offline 'mock' provider is implemented."
+        )
