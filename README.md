@@ -45,7 +45,7 @@ The server started by `python cli.py serve` is `agents.api:app`. It exposes:
 | `POST /api/chat` | Deterministic mock reply; no external LLM |
 | `GET /api/audit/logs` | Audit history; requires `AUDIT_LOGS_API_KEY` and matching `X-Audit-Key` header |
 
-`AUDIT_SECRET_KEY` is required for Python evaluations; it must be a unique secret of at least 32 characters. Audit entries use an in-memory HMAC-SHA256 hash chain that is checked by recomputing signatures. The history is lost on process restart. The record is **not** an immutable, externally anchored, or regulatory-compliant audit system. The regex-based identifier guard recognizes some common patterns but is **not a validated de-identification method**. Do not submit real patient data.
+`AUDIT_SECRET_KEY` is required for Python evaluations; it must be a unique secret of at least 32 characters. Audit entries use an in-memory HMAC-SHA256 hash chain that is checked by recomputing signatures. The history is lost on process restart. The record is **not** an immutable, externally anchored, or regulatory-compliant audit system. The regex-based identifier guard recognizes some common patterns but is **not a validated de-identification method**. Do not submit real patient data. Replace any historical deployment secret that was copied from earlier committed examples.
 
 The audit and chat endpoints have no account authentication; do not bind the API to an untrusted network. The supplied Docker Compose configuration binds to localhost and requires you to provide a secret:
 
