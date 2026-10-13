@@ -1,27 +1,37 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "stroke-neuroimaging-engine"
-version = "2.0.0"
-description = "NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Engine"
+name = "stroke-neuroimaging-agent"
+version = "2.0.1"
+description = "Synthetic neuroimaging-themed rule evaluation and audit demonstration"
 readme = "README.md"
-authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+authors = [{ name = "Dr. Abu Suraih Sakhri" }]
 license = { text = "MIT" }
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Topic :: Scientific/Engineering :: Medical Science Apps.",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-requires-python = ">=3.9"
-dependencies = []
+dependencies = ["pydantic>=2.0,<3"]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110,<1", "uvicorn>=0.27,<1"]
+test = ["pytest>=8,<10", "httpx>=0.27,<1"]
 
 [project.scripts]
+stroke-neuroimaging-agent = "cli:main"
 stroke-neuroimaging-engine = "stroke_neuroimaging_agent.cli:main"
 
+[tool.setuptools]
+packages = ["agents", "stroke_neuroimaging_agent"]
+py-modules = [
+    "cli", "enrichment", "simulator", "stroke_sentinel",
+    "stroke_sentinel_app", "stroke_neuroimaging_agent_app",
+]
+
 [project.urls]
-Homepage = "https://github.com/abusuraihsakhri/stroke-neuroimaging-engine"
-Repository = "https://github.com/abusuraihsakhri/stroke-neuroimaging-engine.git"
+Homepage = "https://github.com/abusuraihsakhri/stroke-neuroimaging-agent"
+Repository = "https://github.com/abusuraihsakhri/stroke-neuroimaging-agent"
