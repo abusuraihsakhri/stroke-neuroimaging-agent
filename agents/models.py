@@ -1,7 +1,7 @@
 """
 Pydantic v2 schemas and data definitions for Stroke Neuroimaging Agent.
 Domain: Radiology & Neuroimaging Systems
-Standard: ACR RADS / Fleischner Society / ASPECTS Guidelines
+Scope: synthetic demonstration, not clinically validated stroke imaging triage
 """
 import datetime
 import math
@@ -58,7 +58,7 @@ class AgentAlert(BaseModel):
     summary: str
     technical_details: str
     actionable_remediation: str
-    standard_reference: str = "ACR RADS / Fleischner Society / ASPECTS Guidelines"
+    standard_reference: str = "Illustrative synthetic rules (not clinical guidance)"
     timestamp: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:
