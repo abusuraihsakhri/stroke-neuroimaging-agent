@@ -1,17 +1,10 @@
-version: '3.8'
-
 services:
-  stroke-neuroimaging-engine:
+  stroke-neuroimaging-agent:
     build: .
-    container_name: stroke-neuroimaging-engine
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      - AUDIT_SECRET_KEY=stroke-neuroimaging-engine-prod-audit-key-2026
-      - MODEL_PROVIDER=mock
+      AUDIT_SECRET_KEY: ${AUDIT_SECRET_KEY:?Set a unique 32+ character secret in your environment}
+      MODEL_PROVIDER: mock
+      AUDIT_LOGS_API_KEY: ${AUDIT_LOGS_API_KEY:-}
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
