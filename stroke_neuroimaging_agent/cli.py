@@ -67,8 +67,8 @@ def main(argv=None):
         )
         dossier = coordinator.process_case(case)
         print("=" * 80)
-        print(f"  NEUROSTROKE SENTINEL: ASPECTS SCORE & LARGE VESSEL OCCLUSION (LVO) TRIAGE AGENT")
-        print(f"  Domain: Neuroradiology | Standard: AHA / ASA 2019 Acute Ischemic Stroke Guidelines")
+        print(f"  NEUROSTROKE SENTINEL: SYNTHETIC RULE DEMONSTRATION")
+        print(f"  Scope: illustrative synthetic rules, not clinical decision support")
         print(f"  Case: {dossier['case_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
