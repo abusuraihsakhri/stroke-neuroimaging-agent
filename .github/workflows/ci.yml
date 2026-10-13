@@ -34,4 +34,6 @@ jobs:
           AUDIT_SECRET_KEY: "testing-only-audit-secret-key-never-use-in-production"
         run: python -m pytest -q
       - name: Verify browser JavaScript syntax
-        run: node --check web/app.js
+        run: |
+          node --check web/app.js
+          node tests/web_smoke.cjs
