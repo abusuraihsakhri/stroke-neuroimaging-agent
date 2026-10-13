@@ -11,6 +11,23 @@ from .agents import StrokeCoordinator
 coordinator = StrokeCoordinator()
 
 
+def parse_csv_bool(value):
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().lower()
+    if normalized in ("true", "1", "yes", "y"):
+        return True
+    if normalized in ("false", "0", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid STAT flag: {value!r}")
+
+
+def safe_csv_cell(value):
+    if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@", "\t", "\r")):
+        return "'" + value
+    return value
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="stroke-neuroimaging-agent", description="NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -50,8 +67,8 @@ def main(argv=None):
         )
         dossier = coordinator.process_case(case)
         print("=" * 80)
-        print(f"  NEUROSTROKE SENTINEL: ASPECTS SCORE & LARGE VESSEL OCCLUSION (LVO) TRIAGE AGENT")
-        print(f"  Domain: Neuroradiology | Standard: AHA / ASA 2019 Acute Ischemic Stroke Guidelines")
+        print(f"  NEUROSTROKE SENTINEL: SYNTHETIC RULE DEMONSTRATION")
+        print(f"  Scope: illustrative synthetic rules, not clinical decision support")
         print(f"  Case: {dossier['case_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
@@ -73,7 +90,7 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]))
         out_rows = []
         for r in rows:
             case = ClinicalCasePayload(
@@ -82,10 +99,10 @@ def main(argv=None):
                 primary_metric=float(r.get("metric_primary", r.get("primary_metric", 15.0))),
                 secondary_metric=float(r.get("metric_secondary", r.get("secondary_metric", 5.0))),
                 status_flag=r.get("status_flag", r.get("status_text", "NORMAL")),
-                is_stat=bool(r.get("is_stat", r.get("critical_flag", False))),
+                is_stat=parse_csv_bool(r.get("is_stat", r.get("critical_flag", False))),
             )
             dossier = coordinator.process_case(case)
-            row_dict = dict(r)
+            row_dict = {key: safe_csv_cell(value) for key, value in r.items()}
             row_dict["overall_status"] = dossier["overall_status"]
             row_dict["total_alerts"] = dossier["total_alerts"]
             row_dict["stat_critical_alerts"] = dossier["stat_critical_alerts"]

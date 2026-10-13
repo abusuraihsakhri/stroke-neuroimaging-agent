@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent
-Evaluates non-contrast CT ASPECTS (0-10) and CT Angiography for anterior circulation LVO to fast-track mechanical thrombectomy candidates.
+Evaluates synthetic numeric indicators. Does not process medical images or support treatment decisions.
 
 Domain: Neuroradiology
 Author: Dr. Abu Suraih Sakhri
@@ -18,6 +18,23 @@ from enum import Enum
 from typing import Dict, Any, List, Optional
 
 
+def parse_bool(value):
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().lower()
+    if normalized in ("true", "1", "yes", "y"):
+        return True
+    if normalized in ("false", "0", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid critical flag: {value!r}")
+
+
+def safe_csv_cell(value):
+    if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@", "\t", "\r")):
+        return "'" + value
+    return value
+
+
 class Severity(str, Enum):
     INFO = "INFO"
     ADVISORY = "ADVISORY"
@@ -32,16 +49,16 @@ class Severity(str, Enum):
 
 class DomainKnowledgeRegistry:
     """Enterprise domain rules, guideline matrices, and evidence benchmarks."""
-    SYSTEM_VERSION = "2.0.0-PRO-CLINICAL"
-    ZERO_PHI_COMPLIANCE = True
-    HIPAA_SAFE_HARBOR = "ACTIVE_ON_PREMISES"
+    SYSTEM_VERSION = "2.0.1-PRO-SYNTHETIC"
+    ZERO_PHI_COMPLIANCE = False
+    HIPAA_SAFE_HARBOR = "NOT_ASSESSED"
 
     @staticmethod
     def audit_security_and_integrity(payload: Dict[str, Any]) -> List[str]:
         warnings = []
         for key in payload.keys():
             if any(phi_keyword in key.lower() for phi_keyword in ["patient_name", "ssn", "mrn_raw", "dob_raw"]):
-                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier '{key}' masked to synthetic token.")
+                warnings.append(f"POTENTIAL_IDENTIFIER: Field '{key}' requires manual review (not redacted).")
         return warnings
 
 class AgentAlert:
@@ -89,7 +106,7 @@ class LVOOcclusionFinderAgent:
     """Specialized Sub-Agent 2 for stroke-neuroimaging-agent"""
     def evaluate(self, payload: Dict[str, Any]) -> List[AgentAlert]:
         alerts = []
-        is_critical = bool(payload.get("critical_flag", False))
+        is_critical = parse_bool(payload.get("critical_flag", False))
         val2 = float(payload.get("metric_secondary", 5.0))
         if is_critical or val2 > 12.0:
             alerts.append(
@@ -99,7 +116,7 @@ class LVOOcclusionFinderAgent:
                     severity=Severity.CRITICAL,
                     title="Urgent Consensus Protocol Trigger",
                     details=f"Secondary parameter index ({val2:.1f}) triggered automated supervisory escalation.",
-                    recommendation="Initiate mandatory closed-loop clinical notification protocol.",
+                    recommendation="Review the simulated priority flag; not a clinical notification protocol.",
                 )
             )
         return alerts
@@ -166,9 +183,9 @@ class StrokeCoordinator:
         if "summary" in q or "status" in q:
             return f"NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "All sub-agents operate under validated consensus clinical algorithms and CAP/CLSI/NCCN/WHO standards."
+            return "No clinical guidelines have been implemented or validated; these are illustrative synthetic rules."
         else:
-            return f"NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
+            return f"NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent synthetic coordinator ready. No image interpretation or clinical monitoring is performed."
 
 
 coordinator = StrokeCoordinator()
@@ -181,7 +198,7 @@ def create_app():
 
         app = FastAPI(
             title="NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent",
-            description="Evaluates non-contrast CT ASPECTS (0-10) and CT Angiography for anterior circulation LVO to fast-track mechanical thrombectomy candidates.",
+            description="Synthetic metric evaluation demonstration, not a clinical imaging or triage system.",
             version="1.0.0",
         )
 
@@ -250,7 +267,7 @@ def main(argv=None):
         }
         dossier = coordinator.audit_case(payload)
         print("=" * 80)
-        print(f"  NEUROSTROKE SENTINEL: ASPECTS SCORE & LARGE VESSEL OCCLUSION (LVO) TRIAGE AGENT")
+        print(f"  NEUROSTROKE SENTINEL: SYNTHETIC RULE DEMONSTRATION")
         print(f"  Case: {dossier['case_id']} | Status: [{dossier['overall_status']}] | Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
@@ -272,11 +289,11 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "critical_count", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "critical_count", "consensus_summary"]))
         out_rows = []
         for r in rows:
             dossier = coordinator.audit_case(dict(r))
-            row_dict = dict(r)
+            row_dict = {key: safe_csv_cell(value) for key, value in r.items()}
             row_dict["overall_status"] = dossier["overall_status"]
             row_dict["total_alerts"] = dossier["total_alerts"]
             row_dict["critical_count"] = dossier["critical_count"]

@@ -93,7 +93,7 @@ class StrokeCoordinator:
             "stat_critical_alerts": stat_count,
             "warning_alerts": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "guideline_standard": "AHA / ASA 2019 Acute Ischemic Stroke Guidelines",
+            "guideline_standard": ClinicalDomainEngine.GUIDELINE,
             "consensus_summary": f"Multi-agent supervision completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -105,6 +105,6 @@ class StrokeCoordinator:
         if "status" in q or "summary" in q:
             return f"NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent currently tracking {len(self.case_registry)} cases in on-premises memory."
         elif "guideline" in q or "standard" in q:
-            return "Active clinical surveillance operates under AHA / ASA 2019 Acute Ischemic Stroke Guidelines validated protocols."
+            return "This demonstration uses synthetic thresholds and is not a validated clinical protocol."
         else:
-            return f"NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent executive agent online. Zero-PHI air-gapped monitoring active."
+            return f"NeuroStroke Sentinel: ASPECTS Score & Large Vessel Occlusion (LVO) Triage Agent synthetic coordinator available. No clinical or privacy certification is implied."
